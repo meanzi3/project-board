@@ -46,6 +46,24 @@ class ArticleControllerTest {
     this.mvc = mvc;
   }
 
+  @DisplayName("[view][GET] 게시글 리스트 (게시판) 페이지 - 정상 호출")
+  @Test
+  public void givenNothing_whenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
+    // Given
+    given(articleService.searchArticles(eq(null), eq(null), any(Pageable.class))).willReturn(Page.empty());
+    given(paginationService.getPaginationBarNumbers(anyInt(), anyInt())).willReturn(List.of(0, 1, 2, 3, 4));
+
+    // When & Then
+    mvc.perform(get("/articles"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+            .andExpect(view().name("articles/index"))
+            .andExpect(model().attributeExists("articles"))
+            .andExpect(model().attributeExists("paginationBarNumbers"));
+    then(articleService).should().searchArticles(eq(null), eq(null), any(Pageable.class));
+    then(paginationService).should().getPaginationBarNumbers(anyInt(), anyInt());
+  }
+
   @DisplayName("[view][GET] 게시글 리스트 [게시판] 페이지 - 정상 호출")
   @Test
   public void givenNothing_whenRequestingArticleView_thenReturnArticlesView() throws Exception {
@@ -65,22 +83,26 @@ class ArticleControllerTest {
     then(paginationService).should().getPaginationBarNumbers(anyInt(), anyInt());
   }
 
-  @DisplayName("[view][GET] 게시글 상세 페이지 - 정상 호출")
+  @DisplayName("[view][GET] 게시글 페이지 - 정상 호출")
   @Test
   public void givenNothing_whenRequestingArticleView_thenReturnArticleView() throws Exception {
     // given
     Long articleId = 1L;
+    long totalCount = 1L;
     given(articleService.getArticle(articleId)).willReturn(createArticleWithCommentsDto());
+    given(articleService.getArticleCount()).willReturn(totalCount);
 
     // when & then
-    mvc.perform(get("/articles/1"))
+    mvc.perform(get("/articles/"+articleId))
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
             .andExpect(view().name("articles/detail"))
             .andExpect(model().attributeExists("article"))
-            .andExpect(model().attributeExists("articleComments"));
+            .andExpect(model().attributeExists("articleComments"))
+            .andExpect(model().attributeExists("totalCount"));
 
     then(articleService).should().getArticle(articleId);
+    then(articleService).should().getArticleCount();
   }
 
   @DisplayName("[view][GET] 게시글 리스트 (게시판) 페이지 - 페이징, 정렬 기능")
