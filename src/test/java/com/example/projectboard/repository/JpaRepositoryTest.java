@@ -52,7 +52,7 @@ class JpaRepositoryTest {
   void givenTestData_whenInserting_thenWorksFine(){
     // given
     long previousCount = articleRepository.count();
-    UserAccount userAccount = userAccountRepository.save(UserAccount.of("minji","pw", null, null, null));
+    UserAccount userAccount = userAccountRepository.save(UserAccount.of("newMinji","pw", null, null, null));
     Article article = Article.of(userAccount, "new article", "new content", "new hashtag");
 
     // when
